@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Uptime Status</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #eaeaea;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #121212;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .status-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .glow-tick {
+            font-size: 3rem;
+            color: #4CAF50;
+            text-shadow: 0 0 10px #4CAF50;
+        }
+
+        .status-text {
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .last-checked {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            border-bottom: 2px solid #444;
+            color: #bbb;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .status-dot.online {
+            background-color: #4CAF50;
+            box-shadow: 0 0 15px #4CAF50;
+        }
+
+        .status-dot.offline {
+            background-color: #f44336;
+            box-shadow: 0 0 15px #f44336;
+        }
+
+        .view-button {
+            background-color: #008CBA;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .view-button:hover {
+            background-color: #005f73;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="status-header">
+            <div class="glow-tick">✔</div>
+            <div class="status-text">All Services are Online</div>
+            <div class="last-checked" id="last-checked-time">Last Checked at --:-- IST</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Domain</th>
+                    <th>Status</th>
+                    <th>Graph</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>WEBPPT</td>
+                    <td>dhairyacode.github.io/webppt</td>
+                    <td><span id="status-dot" class="status-dot offline"></span></td>
+                    <td><a href="https://dhairyacode.github.io/status/s1/stats" class="view-button">VIEW</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function displayLastCheckedTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - 31);  // Subtract 31 minutes
+
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            if (hours === 0) hours = 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+
+            const formattedTime = `${hours}:${minutes} ${ampm} IST`;
+            document.getElementById('last-checked-time').textContent = `Last Checked at ${formattedTime}`;
+        }
+
+        async function checkUptime() {
+            try {
+                await fetch('https://dhairyacode.github.io/webppt', { mode: 'no-cors' });
+                document.getElementById('status-dot').classList.remove('offline');
+                document.getElementById('status-dot').classList.add('online');
+            } catch (error) {
+                document.getElementById('status-dot').classList.remove('online');
+                document.getElementById('status-dot').classList.add('offline');
+            }
+        }
+
+        window.onload = () => {
+            displayLastCheckedTime();
+            checkUptime();
+        };
+    </script>
+</body>
+
+</html>
