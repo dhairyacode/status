@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Uptime Status</title>
+    <title>Sites Status</title>
     <style>
         body {
             background-color: #1a1a1a;
             color: #eaeaea;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 2rem;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,29 +24,12 @@
             padding: 2rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
             width: 100%;
-            max-width: 600px;
-        }
-
-        .status-header {
+            max-width: 900px;
             text-align: center;
-            margin-bottom: 2rem;
         }
 
-        .glow-tick {
-            font-size: 3rem;
-            color: #4CAF50;
-            text-shadow: 0 0 10px #4CAF50;
-        }
-
-        .status-text {
-            font-size: 1.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .last-checked {
-            margin-top: 0.5rem;
-            font-size: 1rem;
-            color: #aaa;
+        h1 {
+            margin-bottom: 1.5rem;
         }
 
         table {
@@ -71,7 +54,6 @@
             border-radius: 50%;
             display: inline-block;
             box-shadow: 0 0 10px;
-            transition: background-color 0.3s, box-shadow 0.3s;
         }
 
         .status-dot.online {
@@ -84,33 +66,16 @@
             box-shadow: 0 0 15px #f44336;
         }
 
-        .view-button {
-            background-color: #008CBA;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 1rem;
-            transition: background-color 0.3s;
-        }
-
-        .view-button:hover {
-            background-color: #005f73;
+        .not-available {
+            color: #aaa;
+            font-style: italic;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="status-header">
-            <div class="glow-tick">✔</div>
-            <div class="status-text">All Services are Online</div>
-            <div class="last-checked" id="last-checked-time">Last Checked at --:-- IST</div>
-        </div>
-
+        <h1>Sites Active Status</h1>
         <table>
             <thead>
                 <tr>
@@ -120,48 +85,63 @@
                     <th>Graph</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>WEBPPT</td>
-                    <td>dhairyacode.github.io/webppt</td>
-                    <td><span id="status-dot" class="status-dot offline"></span></td>
-                    <td><a href="https://dhairyacode.github.io/status/s1/stats" class="view-button">VIEW</a></td>
-                </tr>
+            <tbody id="status-table-body">
+                <!-- Rows dynamically injected here -->
             </tbody>
         </table>
     </div>
 
     <script>
-        function displayLastCheckedTime() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - 31);  // Subtract 31 minutes
+        const websites = [
+            { name: 'HomePage', domain: 'https://dhairyacode.github.io' },
+            { name: 'WEBCODEFETCH', domain: 'https://dhairyacode.github.io/webcodefetch' },
+            { name: 'FAKEHACKMENU', domain: 'https://dhairyacode.github.io/fakehackmenu' },
+            { name: 'Portfolio', domain: 'https://dhairyacode.github.io/portfolio', forceOffline: true }
+        ];
 
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            if (hours === 0) hours = 12;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
+        const tableBody = document.getElementById('status-table-body');
 
-            const formattedTime = `${hours}:${minutes} ${ampm} IST`;
-            document.getElementById('last-checked-time').textContent = `Last Checked at ${formattedTime}`;
-        }
+        websites.forEach((site, index) => {
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            nameCell.textContent = site.name;
 
-        async function checkUptime() {
-            try {
-                await fetch('https://dhairyacode.github.io/webppt', { mode: 'no-cors' });
-                document.getElementById('status-dot').classList.remove('offline');
-                document.getElementById('status-dot').classList.add('online');
-            } catch (error) {
-                document.getElementById('status-dot').classList.remove('online');
-                document.getElementById('status-dot').classList.add('offline');
+            const domainCell = document.createElement('td');
+            domainCell.textContent = site.domain;
+
+            const statusCell = document.createElement('td');
+            const statusDot = document.createElement('span');
+            statusDot.classList.add('status-dot', 'offline');  // Default red
+            statusDot.id = `status-dot-${index}`;
+            statusCell.appendChild(statusDot);
+
+            const graphCell = document.createElement('td');
+            graphCell.innerHTML = `<span class="not-available">Not Available</span>`;
+
+            row.appendChild(nameCell);
+            row.appendChild(domainCell);
+            row.appendChild(statusCell);
+            row.appendChild(graphCell);
+
+            tableBody.appendChild(row);
+
+            if (site.forceOffline) {
+                // Force red dot for Portfolio
+                statusDot.classList.remove('online');
+                statusDot.classList.add('offline');
+            } else {
+                // Real-time check for other websites
+                fetch(site.domain, { mode: 'no-cors' })
+                    .then(() => {
+                        statusDot.classList.remove('offline');
+                        statusDot.classList.add('online');
+                    })
+                    .catch(() => {
+                        statusDot.classList.remove('online');
+                        statusDot.classList.add('offline');
+                    });
             }
-        }
-
-        window.onload = () => {
-            displayLastCheckedTime();
-            checkUptime();
-        };
+        });
     </script>
 </body>
 
